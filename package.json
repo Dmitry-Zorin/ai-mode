@@ -9,8 +9,10 @@
   ],
   "scripts": {
     "dev:desktop": "bun run --filter ai-mode dev",
-    "gen:icons": "cd packages/desktop && bunx tauri icon ../../public/logo/logo-mac-alt.svg -o src-tauri/icons",
+    "gen:icons": "cd packages/desktop && bunx tauri icon ../../public/logo/logo-mac.png -o src-tauri/icons",
+    "install:mac": "bun scripts/install-mac-app.mjs",
     "build:desktop": "bun run gen:icons && bun run --filter ai-mode build",
+    "build:mac": "bun run --filter ai-mode build && bun run install:mac",
     "check": "biome ci .",
     "format": "biome format --write ."
   },

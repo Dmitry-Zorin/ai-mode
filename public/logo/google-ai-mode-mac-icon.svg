@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="512" y1="0" x2="512" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.58" stop-color="#F8FAFD"/>
+      <stop offset="1" stop-color="#E9EEF7"/>
+    </linearGradient>
+    <radialGradient id="innerGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(512 400) rotate(90) scale(560)">
+      <stop offset="0.4" stop-color="#FFFFFF" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#DDE6F2" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="googleStroke" x1="270" y1="245" x2="780" y2="790" gradientUnits="userSpaceOnUse">
+      <stop offset="0.02" stop-color="#1A73E8"/>
+      <stop offset="0.25" stop-color="#1A73E8"/>
+      <stop offset="0.45" stop-color="#34A853"/>
+      <stop offset="0.62" stop-color="#FBBC04"/>
+      <stop offset="0.78" stop-color="#EA4335"/>
+      <stop offset="0.98" stop-color="#EA4335"/>
+    </linearGradient>
+    <linearGradient id="aiGrad" x1="350" y1="320" x2="690" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1A73E8"/>
+      <stop offset="0.58" stop-color="#3F7EF3"/>
+      <stop offset="1" stop-color="#8E5CF6"/>
+    </linearGradient>
+    <linearGradient id="sparkGrad" x1="710" y1="665" x2="870" y2="825" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1A73E8"/>
+      <stop offset="1" stop-color="#8E5CF6"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="26" stdDeviation="28" flood-color="#0F172A" flood-opacity="0.18"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0F172A" flood-opacity="0.10"/>
+    </filter>
+    <filter id="softInset" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blur"/>
+      <feOffset dy="1" result="offset"/>
+      <feComposite in="offset" in2="SourceAlpha" operator="out" result="inner"/>
+      <feColorMatrix in="inner" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .45 0"/>
+      <feBlend in="SourceGraphic" mode="normal"/>
+    </filter>
+  </defs>
+
+  <!-- macOS-style squircle background -->
+  <rect x="40" y="28" width="944" height="944" rx="205" fill="url(#bg)" filter="url(#shadow)"/>
+  <rect x="42" y="30" width="940" height="940" rx="203" fill="url(#innerGlow)"/>
+  <rect x="43" y="31" width="938" height="938" rx="202" stroke="#DCE4EF" stroke-opacity="0.55" stroke-width="2"/>
+
+  <!-- Google-inspired open rounded-square stroke -->
+  <path d="M807 548
+           V385
+           C807 300 738 231 653 231
+           H385
+           C300 231 231 300 231 385
+           V638
+           C231 723 300 792 385 792
+           H696"
+        stroke="url(#googleStroke)" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- AI text -->
+  <text x="512" y="523" text-anchor="middle"
+        font-family="Inter, SF Pro Display, Arial, sans-serif"
+        font-size="240" font-weight="750" letter-spacing="-10"
+        fill="url(#aiGrad)">AI</text>
+
+  <!-- Mode label -->
+  <text x="512" y="661" text-anchor="middle"
+        font-family="Inter, SF Pro Display, Arial, sans-serif"
+        font-size="122" font-weight="520" letter-spacing="-5"
+        fill="#273142">Mode</text>
+
+  <!-- Gemini-like sparkle -->
+  <path d="M787 640
+           C802 704 823 725 887 740
+           C823 755 802 776 787 840
+           C772 776 751 755 687 740
+           C751 725 772 704 787 640Z"
+        fill="url(#sparkGrad)"/>
+</svg>
