@@ -1,0 +1,21 @@
+[package]
+name = "ai-mode"
+version = "0.1.0"
+description = "A native shell around Google AI Mode"
+authors = ["Dmitry Zorin"]
+edition = "2021"
+
+[lib]
+name = "ai_mode_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# `devtools` is kept so the chrome-hiding selectors in inject.js can be tuned
+# against the live page via right-click -> Inspect.
+tauri = { version = "2", features = ["macos-private-api", "devtools"] }
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-window-state = "2"
+tauri-plugin-single-instance = "2"

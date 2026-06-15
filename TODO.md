@@ -1,0 +1,4 @@
+- [x] tune the `inject.js` selectors against the live AI Mode DOM (verified 2026-06-15: hide `header`, `#gb`, `[role="navigation"]`; AI Mode has no footer; history rail kept)
+- [ ] replace the inherited Mason Gallery app icons with an AI Mode icon
+- [ ] optional: open external links (e.g. source citations) in the default browser instead of in-app
+- [ ] optional: make the global hotkey configurable instead of hard-coded

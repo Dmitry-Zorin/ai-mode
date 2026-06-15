@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "window-title",
+  "description": "Allow updating the main window title to reflect the open folder/archive.",
+  "windows": ["main"],
+  "permissions": ["core:window:allow-set-title"]
+}
