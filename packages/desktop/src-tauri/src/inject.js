@@ -38,14 +38,20 @@
         value: function (options) {
           if (options && options.publicKey) {
             return Promise.reject(
-              new DOMException("Passkeys are disabled in AI Mode.", "NotSupportedError")
+              new DOMException(
+                "Passkeys are disabled in AI Mode.",
+                "NotSupportedError",
+              ),
             );
           }
 
           if (get) return get(options);
 
           return Promise.reject(
-            new DOMException("Credential Management is unavailable.", "NotSupportedError")
+            new DOMException(
+              "Credential Management is unavailable.",
+              "NotSupportedError",
+            ),
           );
         },
       });
@@ -54,15 +60,16 @@
 
   disableBrokenPasskeyFlow();
 
-  var css = [
-    // Top-left Google logo header. :not(#gb) keeps the account / Sign-in bar,
-    // which is also a <header>, visible.
-    "header:not(#gb)",
-    // The "AI Mode / All / Images / Videos / News / More" search-vertical tab
-    // strip. role="navigation" is unique to it here; the left history rail is
-    // a plain <div>, so it survives.
-    '[role="navigation"]',
-  ].join(", ") + " { display: none !important; }";
+  var css =
+    [
+      // Top-left Google logo header. :not(#gb) keeps the account / Sign-in bar,
+      // which is also a <header>, visible.
+      "header:not(#gb)",
+      // The "AI Mode / All / Images / Videos / News / More" search-vertical tab
+      // strip. role="navigation" is unique to it here; the left history rail is
+      // a plain <div>, so it survives.
+      '[role="navigation"]',
+    ].join(", ") + " { display: none !important; }";
 
   // The composer is the single visible <textarea> (its placeholder is
   // localized, so we match the tag, not the text).
@@ -106,17 +113,45 @@
 
   function visibleNewThreadButton() {
     var list = document.querySelectorAll(
-      'button[aria-label], button[title], [role="button"][aria-label], [role="button"][title]'
+      'button[aria-label], button[title], [role="button"][aria-label], [role="button"][title]',
     );
 
     for (var i = 0; i < list.length; i++) {
       if (list[i].offsetParent === null) continue;
 
-      var label = list[i].getAttribute("aria-label") || list[i].getAttribute("title") || "";
+      var label =
+        list[i].getAttribute("aria-label") ||
+        list[i].getAttribute("title") ||
+        "";
       if (label.trim().toLowerCase() === "new thread") return list[i];
     }
 
     return null;
+  }
+
+  var currentZoomFactor = 1;
+
+  try {
+    currentZoomFactor =
+      Number(localStorage.getItem("ai-mode-zoom") || "1") || 1;
+  } catch (e) {}
+
+  function applyZoom() {
+    if (!document.body) return;
+    document.body.style.zoom = String(currentZoomFactor);
+  }
+
+  function setZoom(nextZoomFactor) {
+    currentZoomFactor = Math.max(
+      0.5,
+      Math.min(2, Math.round(nextZoomFactor * 10) / 10),
+    );
+
+    try {
+      localStorage.setItem("ai-mode-zoom", String(currentZoomFactor));
+    } catch (e) {}
+
+    applyZoom();
   }
 
   // App-local keyboard shortcuts. Capture phase so we win over Google's own
@@ -134,14 +169,27 @@
           e.preventDefault();
           var newThread = visibleNewThreadButton();
           if (newThread) newThread.click();
+        } else if (k === "=" || e.key === "+") {
+          // Cmd+= / Cmd++ -> zoom in.
+          e.preventDefault();
+          setZoom(currentZoomFactor + 0.1);
+        } else if (k === "-") {
+          // Cmd+- -> zoom out.
+          e.preventDefault();
+          setZoom(currentZoomFactor - 0.1);
+        } else if (k === "0") {
+          // Cmd+0 -> reset zoom.
+          e.preventDefault();
+          setZoom(1);
         }
       },
-      true
+      true,
     );
   }
 
   function tick() {
     injectStyle();
+    applyZoom();
     maybeInitialFocus();
   }
 
