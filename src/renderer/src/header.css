@@ -1,0 +1,95 @@
+:root {
+  --header-height: 40px;
+  --bg: #131314;
+  --fg: #e3e3e3;
+  --fg-dim: #9aa0a6;
+  --hover: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui,
+    sans-serif;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+}
+
+#bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  /* Leave room for the native traffic lights on the left. */
+  padding: 0 10px 0 78px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  /* The whole bar is the drag region. */
+  -webkit-app-region: drag;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-dim);
+  letter-spacing: 0.2px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  -webkit-app-region: no-drag;
+}
+
+.zoom {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.icon-btn,
+.zoom-level {
+  -webkit-app-region: no-drag;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  min-width: 26px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--fg);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.zoom-level {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-dim);
+  min-width: 44px;
+}
+
+.icon-btn:hover,
+.zoom-level:hover {
+  background: var(--hover);
+}
+
+.icon-btn:active,
+.zoom-level:active {
+  background: rgba(255, 255, 255, 0.14);
+}

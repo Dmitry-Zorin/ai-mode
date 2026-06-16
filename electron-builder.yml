@@ -1,0 +1,15 @@
+appId: tc.dtt.ai-mode
+productName: AI Mode
+directories:
+  buildResources: build
+files:
+  - out/**
+  - package.json
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.png
+  minimumSystemVersion: "11.0"
+  target:
+    - dmg
+  # Local/dev builds are unsigned; flip this on once a signing identity exists.
+  identity: null

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self'; script-src 'self'"
+    />
+    <title>AI Mode</title>
+    <link rel="stylesheet" href="./src/header.css" />
+  </head>
+  <body>
+    <header id="bar">
+      <div class="title">AI Mode</div>
+      <div class="controls">
+        <button id="new-thread" type="button" class="icon-btn" title="New thread (⌘N)" aria-label="New thread">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 5v14M5 12h14"
+            />
+          </svg>
+        </button>
+        <div class="zoom">
+          <button id="zoom-out" type="button" class="icon-btn" title="Zoom out (⌘−)" aria-label="Zoom out">−</button>
+          <button id="zoom-level" type="button" class="zoom-level" title="Reset zoom (⌘0)" aria-label="Reset zoom">
+            100%
+          </button>
+          <button id="zoom-in" type="button" class="icon-btn" title="Zoom in (⌘+)" aria-label="Zoom in">+</button>
+        </div>
+      </div>
+    </header>
+    <script type="module" src="./src/header.ts"></script>
+  </body>
+</html>

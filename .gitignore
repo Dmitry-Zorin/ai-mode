@@ -1,0 +1,26 @@
+# dependencies
+node_modules
+
+# electron-vite build output
+out
+.vite
+
+# electron-builder output
+dist
+
+# logs
+*.log
+logs
+
+# env
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.DS_Store
+.idea
+*.tsbuildinfo
+
+# claude local settings
+.claude/settings.local.json
