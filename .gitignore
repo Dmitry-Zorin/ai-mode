@@ -1,0 +1,29 @@
+# dependencies
+node_modules
+
+# vite build output
+dist
+.vite
+
+# rust / tauri build output
+src-tauri/target
+
+# tauri-generated capability schemas
+src-tauri/gen/schemas
+
+# logs
+*.log
+logs
+
+# env
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.DS_Store
+.idea
+*.tsbuildinfo
+
+# claude local settings
+.claude/settings.local.json

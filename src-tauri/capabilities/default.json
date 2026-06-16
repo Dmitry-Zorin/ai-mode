@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "IPC for the header bar webview only. The Google webview loads a remote origin and is deliberately granted nothing (Tauri does not inject IPC into remote pages).",
+  "webviews": ["header"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging"
+  ]
+}

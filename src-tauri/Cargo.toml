@@ -1,0 +1,50 @@
+[package]
+name = "ai-mode"
+version = "0.1.0"
+description = "A native shell around Google AI Mode"
+authors = ["Dmitry Zorin <dmitry.zorin@dtt.tc>"]
+license = "MIT"
+edition = "2021"
+
+[lib]
+# The `_lib` suffix keeps the lib name distinct from the bin name (a Windows
+# linker quirk, see rust-lang/cargo#8519).
+name = "ai_mode_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# `unstable` enables one window hosting multiple child webviews, so the native
+# header bar and the Google AI Mode view can be tiled like Electron's
+# WebContentsView. `devtools` keeps right-click -> Inspect available so the
+# chrome-hiding selectors in inject.js can be re-tuned against the live page.
+#
+# Pinned exactly: the whole app rides on the `unstable` multi-webview API, whose
+# shape can shift between minor releases. An upgrade should be a deliberate
+# review-and-retest, never a silent `cargo update` drift -- so bump this on
+# purpose, don't widen the constraint.
+tauri = { version = "=2.11.2", features = ["unstable", "devtools"] }
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-window-state = "2"
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# macOS only: replicate wry's own traffic-light positioner to vertically center
+# the native window controls in our 40px header. The multiwebview WindowBuilder
+# (unlike WebviewWindowBuilder) never exposes traffic_light_position, so we nudge
+# the buttons ourselves. wry already pulls this exact version in, so it dedupes
+# in the lockfile -- no extra build. Keep features to what center_traffic_lights
+# actually touches.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-app-kit = { version = "0.3", default-features = false, features = [
+    "std",
+    "objc2-core-foundation",
+    "NSWindow",
+    "NSView",
+    "NSButton",
+    "NSControl",
+    "NSResponder",
+] }

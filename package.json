@@ -1,0 +1,30 @@
+{
+  "name": "ai-mode",
+  "version": "0.1.0",
+  "description": "A minimal Tauri shell around Google AI Mode",
+  "author": "Dmitry Zorin <dmitry.zorin@dtt.tc>",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "dev:desktop": "tauri dev",
+    "gen:icons": "bash scripts/gen-icons.sh",
+    "dist:mac": "bun run gen:icons && CI=true tauri build --bundles dmg",
+    "install:desktop": "bun run gen:icons && bash scripts/install-local.sh",
+    "check": "biome ci . && tsc --noEmit",
+    "format": "biome check --write ."
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.9",
+    "@tauri-apps/cli": "^2",
+    "typescript": "~5.6.3",
+    "vite": "^6.0.3"
+  }
+}
