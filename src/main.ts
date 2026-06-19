@@ -21,12 +21,15 @@ function renderZoom(zoom: number): void {
   zoomLevel.setAttribute("aria-label", `Zoom ${pct}, activate to reset`);
 }
 
-el("zoom-in").addEventListener("click", () => invoke("zoom_in"));
-el("zoom-out").addEventListener("click", () => invoke("zoom_out"));
-el("zoom-level").addEventListener("click", () => invoke("zoom_reset"));
-el("go-back").addEventListener("click", () => invoke("go_back"));
-el("go-forward").addEventListener("click", () => invoke("go_forward"));
-el("send-template").addEventListener("click", () => invoke("send_template"));
+// Every header button carries data-invoke="<rust_command>" (see index.html);
+// one delegated listener forwards the click, so adding a button needs no wiring
+// here.
+el("bar").addEventListener("click", (event) => {
+  const button = (event.target as Element).closest<HTMLElement>(
+    "[data-invoke]",
+  );
+  if (button?.dataset.invoke) invoke(button.dataset.invoke);
+});
 
 invoke<number>("get_zoom").then(renderZoom);
 listen<number>("zoom", (event) => renderZoom(event.payload));

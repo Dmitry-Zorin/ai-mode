@@ -8,25 +8,27 @@
   </head>
   <body>
     <!-- The whole bar is the window drag region; the buttons opt out simply by
-         not carrying the attribute, so they stay clickable. -->
+         not carrying the attribute, so they stay clickable. Each button names
+         the Rust command it fires via data-invoke; main.ts forwards it with a
+         single delegated click listener, so adding a button is markup-only. -->
     <header id="bar" data-tauri-drag-region>
       <div class="nav">
-        <button id="go-back" type="button" class="icon-btn" title="Back (⌘[)" aria-label="Back">
+        <button type="button" class="icon-btn" data-invoke="go_back" title="Back (⌘[)" aria-label="Back">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4-4.6-4.6z" /></svg>
         </button>
-        <button id="go-forward" type="button" class="icon-btn" title="Forward (⌘])" aria-label="Forward">
+        <button type="button" class="icon-btn" data-invoke="go_forward" title="Forward (⌘])" aria-label="Forward">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8.6 7.4 10 6l6 6-6 6-1.4-1.4 4.6-4.6z" /></svg>
         </button>
       </div>
       <div class="title" data-tauri-drag-region>AI Mode</div>
       <div class="controls">
-        <button id="send-template" type="button" class="icon-btn" title="Double-check &amp; rewrite the last answer" aria-label="Double-check and rewrite the last answer">
+        <button type="button" class="icon-btn" data-invoke="send_template" title="Double-check &amp; rewrite the last answer" aria-label="Double-check and rewrite the last answer">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="5" width="12" height="15" rx="2" /><rect x="9" y="3" width="6" height="3.4" rx="1" /><path d="M9 12.8 11.2 15 15.4 10.4" /></svg>
         </button>
         <div class="zoom">
-          <button id="zoom-out" type="button" class="icon-btn" title="Zoom out (⌘−)" aria-label="Zoom out">−</button>
-          <button id="zoom-level" type="button" class="zoom-level" title="Reset zoom (⌘0)"></button>
-          <button id="zoom-in" type="button" class="icon-btn" title="Zoom in (⌘+)" aria-label="Zoom in">+</button>
+          <button type="button" class="icon-btn" data-invoke="zoom_out" title="Zoom out (⌘−)" aria-label="Zoom out">−</button>
+          <button id="zoom-level" type="button" class="zoom-level" data-invoke="zoom_reset" title="Reset zoom (⌘0)"></button>
+          <button type="button" class="icon-btn" data-invoke="zoom_in" title="Zoom in (⌘+)" aria-label="Zoom in">+</button>
         </div>
       </div>
     </header>
