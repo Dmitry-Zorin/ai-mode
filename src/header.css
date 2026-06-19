@@ -1,5 +1,4 @@
 :root {
-  --header-height: 40px;
   --bg: #131314;
   --fg: #e3e3e3;
   --fg-dim: #9aa0a6;
@@ -28,7 +27,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--header-height);
+  /* Fill the header webview, which Rust sizes to HEADER_HEIGHT -- so that
+     constant in lib.rs stays the single source of truth (no CSS value to sync). */
+  height: 100%;
   /* Leave room for the native traffic lights on the left. */
   padding: 0 10px 0 78px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -91,4 +92,12 @@ body {
 .icon-btn:active,
 .zoom-level:active {
   background: rgba(255, 255, 255, 0.14);
+}
+
+/* Keyboard focus needs a visible ring; the UA default is near-invisible on the
+   dark header. :focus-visible keeps it off mouse clicks. */
+.icon-btn:focus-visible,
+.zoom-level:focus-visible {
+  outline: 2px solid var(--fg);
+  outline-offset: 1px;
 }

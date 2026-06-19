@@ -29,7 +29,9 @@ const SAFARI_UA: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWe
 /// reliably trigger a rebuild -- see build.rs for why.
 const INIT_SCRIPT: &str = include_str!(concat!(env!("OUT_DIR"), "/inject.js"));
 
-/// Height of the native header bar, in logical px. Must match header.css.
+/// Height of the native header bar, in logical px. The header webview is sized
+/// to exactly this by the layout pass and header.css fills it (`#bar` is 100%
+/// tall), so this constant is the single source of truth -- no CSS value to sync.
 const HEADER_HEIGHT: f64 = 40.0;
 
 const DEFAULT_WIDTH: f64 = 980.0;
@@ -526,8 +528,13 @@ pub fn run() {
                     if host.is_empty() || is_in_app_host(host) {
                         return true; // sign-in, reCAPTCHA, SODAR, ads -- all in-app
                     }
-                    // Citations and other external links open in the system browser.
-                    let _ = std::process::Command::new("open").arg(url.as_str()).spawn();
+                    // Citations and other external links open in the system browser
+                    // -- but only http(s). The URL is page-controlled, so a file://
+                    // or custom app scheme must never reach `open`, which would hand
+                    // the OS an arbitrary protocol handler to launch.
+                    if matches!(url.scheme(), "http" | "https") {
+                        let _ = std::process::Command::new("open").arg(url.as_str()).spawn();
+                    }
                     false
                 })
                 .on_page_load(|webview, payload| {
@@ -599,7 +606,10 @@ pub fn run() {
             });
 
             // Restore last size/position (saved by window-state on exit), then tile.
-            let _ = window.restore_state(StateFlags::all());
+            // Exclude VISIBLE: the red light hides (not closes) the window, so the
+            // plugin can persist visible=false; restoring that would relaunch to an
+            // invisible window (just the menu bar). Always start shown.
+            let _ = window.restore_state(StateFlags::all() & !StateFlags::VISIBLE);
             layout(&window, &handle);
             // First placement of the traffic lights; the window-event handler
             // re-applies whenever macOS resets them (resize/fullscreen/focus).
@@ -618,9 +628,15 @@ pub fn run() {
                     })
                     .build(),
             )?;
-            // Non-fatal: if another app already holds Option+Space, the rest of
-            // the app should still run.
-            let _ = app.global_shortcut().register(hotkey);
+            // Non-fatal: if another app already holds Option+Space, the rest of the
+            // app should still run -- but warn so the conflict is diagnosable (the
+            // window is still reachable via the Dock icon and relaunch).
+            if let Err(e) = app.global_shortcut().register(hotkey) {
+                eprintln!(
+                    "[AI Mode] Could not register the Option+Space global shortcut \
+                     (already in use?): {e}"
+                );
+            }
 
             Ok(())
         })

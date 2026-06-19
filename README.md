@@ -44,7 +44,7 @@ commands; Rust owns the zoom factor and broadcasts it back for the `%` display.
 ### Prerequisites
 
 - [Rust](https://www.rust-lang.org/) (stable) + the macOS toolchain
-- [Bun](https://bun.sh/) (or npm)
+- [Bun](https://bun.sh/)
 
 ```bash
 bun install             # install JS dependencies

@@ -88,12 +88,18 @@
   }
 
   // --- composer focus -------------------------------------------------------
-  // The composer is the single visible <textarea> (its placeholder is
-  // localized, so match the tag, not the text).
-  function visibleTextarea() {
-    var list = document.querySelectorAll("textarea");
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].offsetParent !== null) return list[i];
+  // The composer is the single visible input -- today a <textarea> (its
+  // placeholder is localized, so match the tag, not the text). Try the textarea
+  // first so current behavior is unchanged, then fall back to a contenteditable
+  // / role=textbox so a future composer redesign still focuses instead of
+  // silently no-op'ing.
+  function visibleComposer() {
+    var selectors = ["textarea", '[contenteditable="true"]', '[role="textbox"]'];
+    for (var s = 0; s < selectors.length; s++) {
+      var list = document.querySelectorAll(selectors[s]);
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].offsetParent !== null) return list[i];
+      }
     }
     return null;
   }
@@ -101,14 +107,17 @@
   // Exposed so the native side can refocus the box when the window is summoned
   // (see lib.rs WindowEvent::Focused). No-op if the box isn't there yet.
   window.__aimodeFocusInput = function () {
-    var ta = visibleTextarea();
-    if (ta) {
-      ta.focus();
+    var el = visibleComposer();
+    if (el) {
+      el.focus();
+      // setSelectionRange/value exist on <textarea> only; skip for contenteditable.
       try {
-        ta.setSelectionRange(ta.value.length, ta.value.length);
+        if (typeof el.setSelectionRange === "function") {
+          el.setSelectionRange(el.value.length, el.value.length);
+        }
       } catch (e) {}
     }
-    return !!ta;
+    return !!el;
   };
 
   // Exposed so the native side can drop a canned prompt into the composer and
@@ -119,21 +128,34 @@
   // Submitting is then a synthetic Enter sequence (AI Mode's composer sends on
   // Enter), deferred a tick so React has committed the value the handler reads.
   window.__aimodeSendPrompt = function (text) {
-    var ta = visibleTextarea();
-    if (!ta) return false;
-    ta.focus();
-    var setter = Object.getOwnPropertyDescriptor(
-      window.HTMLTextAreaElement.prototype,
-      "value",
-    ).set;
-    setter.call(ta, text);
-    ta.dispatchEvent(new Event("input", { bubbles: true }));
-    try {
-      ta.setSelectionRange(text.length, text.length);
-    } catch (e) {}
+    var el = visibleComposer();
+    if (!el) return false;
+    el.focus();
+    if (el.tagName === "TEXTAREA") {
+      // React-controlled <textarea>: go through the prototype's native value
+      // setter and fire a bubbling "input" so React commits the new value.
+      var setter = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype,
+        "value",
+      ).set;
+      setter.call(el, text);
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      try {
+        el.setSelectionRange(text.length, text.length);
+      } catch (e) {}
+    } else {
+      // contenteditable composer: insertText keeps the framework's input
+      // handler, selection and undo stack sane; fall back to textContent.
+      try {
+        document.execCommand("insertText", false, text);
+      } catch (e) {
+        el.textContent = text;
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
     setTimeout(function () {
       ["keydown", "keypress", "keyup"].forEach(function (type) {
-        ta.dispatchEvent(
+        el.dispatchEvent(
           new KeyboardEvent(type, {
             key: "Enter",
             code: "Enter",
@@ -220,9 +242,9 @@
         "search-vertical tabs not found -- the tab-hiding selectors are stale",
       );
     }
-    if (!visibleTextarea()) {
+    if (!visibleComposer()) {
       problems.push(
-        "composer <textarea> not found -- focus + New Thread hooks may be stale",
+        "composer not found -- focus + New Thread hooks may be stale",
       );
     }
     if (problems.length) {

@@ -6,14 +6,19 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
-function el<T extends HTMLElement>(id: string): T {
+function el(id: string): HTMLElement {
   const node = document.getElementById(id);
   if (!node) throw new Error(`Missing element #${id}`);
-  return node as T;
+  return node;
 }
 
 function renderZoom(zoom: number): void {
-  el("zoom-level").textContent = `${Math.round(zoom * 100)}%`;
+  const pct = `${Math.round(zoom * 100)}%`;
+  const zoomLevel = el("zoom-level");
+  zoomLevel.textContent = pct;
+  // Convey both the live value and the reset action to assistive tech -- a
+  // static aria-label would otherwise hide the percentage the button shows.
+  zoomLevel.setAttribute("aria-label", `Zoom ${pct}, activate to reset`);
 }
 
 el("zoom-in").addEventListener("click", () => invoke("zoom_in"));
