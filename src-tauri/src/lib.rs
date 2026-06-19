@@ -79,24 +79,12 @@ const NEW_THREAD_JS: &str = r#"(() => {
 const FOCUS_JS: &str = "window.__aimodeFocusInput && window.__aimodeFocusInput()";
 
 /// Canned prompt the header's template button injects into the composer and
-/// sends in one shot. Edit this string to change what the button asks. It is
-/// JSON-encoded before being handed to inject.js's __aimodeSendPrompt hook, so
-/// newlines, quotes and Unicode here are all safe.
-const TEMPLATE_PROMPT: &str = r#"Doubt your previous answer and fact-check it. Treat it as untrusted until verified.
-
-Use live web search to verify every checkable claim against current, reputable sources (official docs, primary sources, established publications). Do not rely on memory for anything verifiable. Watch for hallucinated or invented details, outdated information, unsupported claims, opinions stated as fact, and overconfident wording.
-
-Return only this structure:
-
-1. Checks
-- For each claim you verified: what you checked, what the sources say, and whether the claim holds. Link the sources.
-
-2. Rewritten answer
-- Rewrite the original answer so it is accurate, careful, and neutral.
-- Correct or drop anything you could not verify.
-- State remaining uncertainty plainly.
-
-Be strict. Do not defend the previous answer by default."#;
+/// sends in one shot. Edit src/template-prompt.md to change what the button
+/// asks -- it's embedded from OUT_DIR (build.rs copies it there) for the same
+/// rebuild-reliability reason as inject.js. JSON-encoded before being handed to
+/// inject.js's __aimodeSendPrompt hook, so newlines, quotes and Unicode are all
+/// safe; the file's trailing newline is trimmed at the send site.
+const TEMPLATE_PROMPT: &str = include_str!(concat!(env!("OUT_DIR"), "/template-prompt.md"));
 
 /// Hosts that load *inside* the app instead of the system browser. AI Mode pulls
 /// in sign-in, reCAPTCHA and ad-traffic-quality (SODAR) frames on Google's own
@@ -319,8 +307,9 @@ fn new_thread(app: AppHandle) {
 fn send_template(app: AppHandle) {
     if let Some(g) = app.get_webview("google") {
         // JSON-encode so any quotes/newlines in TEMPLATE_PROMPT stay safe inside
-        // the eval'd call; serializing a &str never fails.
-        let arg = serde_json::to_string(TEMPLATE_PROMPT).unwrap();
+        // the eval'd call; serializing a &str never fails. trim_end drops the
+        // embedded file's final newline so the sent prompt ends cleanly.
+        let arg = serde_json::to_string(TEMPLATE_PROMPT.trim_end()).unwrap();
         let _ = g.eval(format!(
             "window.__aimodeSendPrompt && window.__aimodeSendPrompt({arg})"
         ));

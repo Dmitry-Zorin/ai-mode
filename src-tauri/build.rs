@@ -8,9 +8,19 @@ fn main() {
     // fingerprinted, so changing inject.js (via rerun-if-changed) re-runs this
     // script, rewrites the copy, and reliably recompiles the crate. Net effect:
     // `tauri dev` hot-reloads on inject.js edits.
+    let out_dir = env::var("OUT_DIR").unwrap();
     println!("cargo:rerun-if-changed=src/inject.js");
-    let dest = Path::new(&env::var("OUT_DIR").unwrap()).join("inject.js");
-    fs::copy("src/inject.js", &dest).expect("copy inject.js into OUT_DIR");
+    fs::copy("src/inject.js", Path::new(&out_dir).join("inject.js"))
+        .expect("copy inject.js into OUT_DIR");
+
+    // template-prompt.md is embedded the same way and for the same reason (see
+    // above): route it through OUT_DIR so editing the prompt reliably rebuilds.
+    println!("cargo:rerun-if-changed=src/template-prompt.md");
+    fs::copy(
+        "src/template-prompt.md",
+        Path::new(&out_dir).join("template-prompt.md"),
+    )
+    .expect("copy template-prompt.md into OUT_DIR");
 
     // Любой rerun-if-changed выше отключает дефолтное отслеживание всех файлов
     // пакета, из-за чего правки иконок не переэмбедят dev-иконку в доке
