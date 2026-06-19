@@ -121,15 +121,37 @@
   };
 
   // Exposed so the native side can drop a canned prompt into the composer and
-  // send it in one shot (see lib.rs send_template). The composer is React-
+  // send it in one shot (see lib.rs fact_check). The composer is React-
   // controlled, so a plain `ta.value = text` is silently reverted on the next
   // render -- we must go through the prototype's native value setter and fire a
   // bubbling "input" event so React's onChange commits the new value to state.
   // Submitting is then a synthetic Enter sequence (AI Mode's composer sends on
   // Enter), deferred a tick so React has committed the value the handler reads.
+  //
+  // A short cooldown swallows an accidental double-fire -- a double-click, or
+  // the prompt being triggered again before the first submit has landed -- so
+  // the canned prompt isn't sent twice back-to-back.
+  var lastSendAt = 0;
   window.__aimodeSendPrompt = function (text) {
     var el = visibleComposer();
-    if (!el) return false;
+    if (!el) {
+      // Match the loud-failure convention the other hooks follow (NEW_THREAD_JS,
+      // selfCheck): a missing composer means either the visibleComposer()
+      // selectors went stale or there's simply no composer on this page (e.g.
+      // sign-in). Warn so it surfaces as a greppable "[AI Mode]" message in
+      // devtools instead of the header button silently doing nothing.
+      console.warn(
+        "[AI Mode] Fact-check: composer not found -- visibleComposer() " +
+          "selectors in inject.js may be stale, or there is no composer on " +
+          "this page (e.g. sign-in).",
+      );
+      return false;
+    }
+    // Cooldown check sits after the composer lookup so a stale-selector miss
+    // still warns every time, and a failed attempt never starts the cooldown.
+    var now = Date.now();
+    if (now - lastSendAt < 1000) return false;
+    lastSendAt = now;
     el.focus();
     if (el.tagName === "TEXTAREA") {
       // React-controlled <textarea>: go through the prototype's native value

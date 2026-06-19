@@ -13,14 +13,14 @@ fn main() {
     fs::copy("src/inject.js", Path::new(&out_dir).join("inject.js"))
         .expect("copy inject.js into OUT_DIR");
 
-    // template-prompt.md is embedded the same way and for the same reason (see
+    // fact-check-prompt.md is embedded the same way and for the same reason (see
     // above): route it through OUT_DIR so editing the prompt reliably rebuilds.
-    println!("cargo:rerun-if-changed=src/template-prompt.md");
+    println!("cargo:rerun-if-changed=src/fact-check-prompt.md");
     fs::copy(
-        "src/template-prompt.md",
-        Path::new(&out_dir).join("template-prompt.md"),
+        "src/fact-check-prompt.md",
+        Path::new(&out_dir).join("fact-check-prompt.md"),
     )
-    .expect("copy template-prompt.md into OUT_DIR");
+    .expect("copy fact-check-prompt.md into OUT_DIR");
 
     // Любой rerun-if-changed выше отключает дефолтное отслеживание всех файлов
     // пакета, из-за чего правки иконок не переэмбедят dev-иконку в доке

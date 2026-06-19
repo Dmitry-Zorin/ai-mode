@@ -78,13 +78,13 @@ const NEW_THREAD_JS: &str = r#"(() => {
 /// Hook exposed by inject.js: focus the composer and drop the caret at the end.
 const FOCUS_JS: &str = "window.__aimodeFocusInput && window.__aimodeFocusInput()";
 
-/// Canned prompt the header's template button injects into the composer and
-/// sends in one shot. Edit src/template-prompt.md to change what the button
+/// Canned prompt the header's fact-check button injects into the composer and
+/// sends in one shot. Edit src/fact-check-prompt.md to change what the button
 /// asks -- it's embedded from OUT_DIR (build.rs copies it there) for the same
 /// rebuild-reliability reason as inject.js. JSON-encoded before being handed to
 /// inject.js's __aimodeSendPrompt hook, so newlines, quotes and Unicode are all
 /// safe; the file's trailing newline is trimmed at the send site.
-const TEMPLATE_PROMPT: &str = include_str!(concat!(env!("OUT_DIR"), "/template-prompt.md"));
+const FACT_CHECK_PROMPT: &str = include_str!(concat!(env!("OUT_DIR"), "/fact-check-prompt.md"));
 
 /// Hosts that load *inside* the app instead of the system browser. AI Mode pulls
 /// in sign-in, reCAPTCHA and ad-traffic-quality (SODAR) frames on Google's own
@@ -304,12 +304,12 @@ fn new_thread(app: AppHandle) {
 }
 
 #[tauri::command]
-fn send_template(app: AppHandle) {
+fn fact_check(app: AppHandle) {
     if let Some(g) = app.get_webview("google") {
-        // JSON-encode so any quotes/newlines in TEMPLATE_PROMPT stay safe inside
-        // the eval'd call; serializing a &str never fails. trim_end drops the
-        // embedded file's final newline so the sent prompt ends cleanly.
-        let arg = serde_json::to_string(TEMPLATE_PROMPT.trim_end()).unwrap();
+        // JSON-encode so any quotes/newlines in FACT_CHECK_PROMPT stay safe
+        // inside the eval'd call; serializing a &str never fails. trim_end drops
+        // the embedded file's final newline so the sent prompt ends cleanly.
+        let arg = serde_json::to_string(FACT_CHECK_PROMPT.trim_end()).unwrap();
         let _ = g.eval(format!(
             "window.__aimodeSendPrompt && window.__aimodeSendPrompt({arg})"
         ));
@@ -358,6 +358,13 @@ fn build_menu(app: &AppHandle) -> tauri::Result<(tauri::menu::Menu<Wry>, Submenu
         .item(
             &MenuItemBuilder::with_id("new-thread", "New Thread")
                 .accelerator("CmdOrCtrl+N")
+                .build(app)?,
+        )
+        // Mirrors the header's fact-check button. CmdOrCtrl+Shift+R is free
+        // (plain CmdOrCtrl+R is Reload) and reads as "re-check / rewrite".
+        .item(
+            &MenuItemBuilder::with_id("fact-check", "Fact-check & Rewrite")
+                .accelerator("CmdOrCtrl+Shift+R")
                 .build(app)?,
         )
         .separator()
@@ -449,7 +456,7 @@ pub fn run() {
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             zoom_in, zoom_out, zoom_reset, get_zoom, go_back, go_forward, new_thread,
-            send_template
+            fact_check
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -584,6 +591,7 @@ pub fn run() {
             // Menu accelerators and header buttons share the same handlers.
             app.on_menu_event(|app, event| match event.id().as_ref() {
                 "new-thread" => new_thread(app.clone()),
+                "fact-check" => fact_check(app.clone()),
                 "zoom-in" | "zoom-in-plus" => zoom_in(app.clone()),
                 "zoom-out" => zoom_out(app.clone()),
                 "zoom-reset" => zoom_reset(app.clone()),
