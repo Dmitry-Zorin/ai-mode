@@ -47,4 +47,11 @@ objc2-app-kit = { version = "0.3", default-features = false, features = [
     "NSButton",
     "NSControl",
     "NSResponder",
+    # NSApplication.sendAction:to:from: dispatches the native
+    # `pasteAndMatchStyle:` selector for the Edit menu's Paste and Match Style
+    # item, which muda has no predefined item for (see paste_and_match_style).
+    "NSApplication",
 ] }
+# `sel!` and MainThreadMarker for that same native action dispatch. Pulled in
+# transitively by objc2-app-kit, so this dedupes in the lockfile -- no extra build.
+objc2 = "0.6"

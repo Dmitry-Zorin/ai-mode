@@ -332,6 +332,30 @@ fn toggle_devtools(app: &AppHandle) {
     }
 }
 
+/// Native "Paste and Match Style" (⌥⇧⌘V). muda exposes no predefined item for
+/// it, so the menu item is custom and we forward it by sending the standard
+/// `pasteAndMatchStyle:` action into the responder chain -- the same dispatch
+/// AppKit performs for the predefined clipboard items. `to: nil` routes from the
+/// key window's first responder, so it lands in the focused WKWebView (which
+/// implements the selector); off a text field it finds no target and no-ops.
+#[cfg(target_os = "macos")]
+fn paste_and_match_style() {
+    use objc2::{sel, MainThreadMarker};
+    use objc2_app_kit::NSApplication;
+
+    // Menu events fire on the main thread; bail rather than panic if that ever
+    // changes, since AppKit access off-main is undefined behavior.
+    let Some(mtm) = MainThreadMarker::new() else {
+        return;
+    };
+    let app = NSApplication::sharedApplication(mtm);
+    // SAFETY: standard AppKit action dispatch on the main thread; the selector
+    // takes no arguments and we pass no objects across the boundary.
+    unsafe {
+        let _ = app.sendAction_to_from(sel!(pasteAndMatchStyle:), None, None);
+    }
+}
+
 // --- Menu (accelerators) -----------------------------------------------------
 
 /// macOS app menu. The custom items carry accelerators (Cmd+N / zoom / nav),
@@ -350,6 +374,7 @@ fn build_menu(app: &AppHandle) -> tauri::Result<(tauri::menu::Menu<Wry>, Submenu
         .separator()
         .item(&PredefinedMenuItem::hide(app, None)?)
         .item(&PredefinedMenuItem::hide_others(app, None)?)
+        .item(&PredefinedMenuItem::show_all(app, None)?)
         .separator()
         .item(&PredefinedMenuItem::quit(app, None)?)
         .build()?;
@@ -380,6 +405,16 @@ fn build_menu(app: &AppHandle) -> tauri::Result<(tauri::menu::Menu<Wry>, Submenu
         .item(&PredefinedMenuItem::cut(app, None)?)
         .item(&PredefinedMenuItem::copy(app, None)?)
         .item(&PredefinedMenuItem::paste(app, None)?)
+        // muda has no predefined Paste and Match Style, so this is a custom item
+        // we forward to the native `pasteAndMatchStyle:` selector (see the menu-
+        // event handler). Unlike the predefined clipboard items it isn't auto-
+        // validated, so it always reads as enabled -- harmless, since off a text
+        // field the selector simply finds no responder and no-ops.
+        .item(
+            &MenuItemBuilder::with_id("paste-match-style", "Paste and Match Style")
+                .accelerator("CmdOrCtrl+Shift+Alt+V")
+                .build(app)?,
+        )
         .item(&PredefinedMenuItem::select_all(app, None)?)
         .build()?;
 
@@ -427,10 +462,16 @@ fn build_menu(app: &AppHandle) -> tauri::Result<(tauri::menu::Menu<Wry>, Submenu
                 .accelerator("CmdOrCtrl+Alt+I")
                 .build(app)?,
         )
+        .separator()
+        // Predefined: toggles the window via `toggleFullScreen:` (⌃⌘F). The
+        // Resized handler re-tiles the webviews and re-centers the traffic
+        // lights on the way in and out of fullscreen.
+        .item(&PredefinedMenuItem::fullscreen(app, None)?)
         .build()?;
 
     let window_menu = SubmenuBuilder::new(app, "Window")
         .item(&PredefinedMenuItem::minimize(app, None)?)
+        .item(&PredefinedMenuItem::maximize(app, None)?)
         .build()?;
 
     let menu = MenuBuilder::new(app)
@@ -592,6 +633,10 @@ pub fn run() {
             app.on_menu_event(|app, event| match event.id().as_ref() {
                 "new-thread" => new_thread(app.clone()),
                 "fact-check" => fact_check(app.clone()),
+                "paste-match-style" => {
+                    #[cfg(target_os = "macos")]
+                    paste_and_match_style();
+                }
                 "zoom-in" | "zoom-in-plus" => zoom_in(app.clone()),
                 "zoom-out" => zoom_out(app.clone()),
                 "zoom-reset" => zoom_reset(app.clone()),
